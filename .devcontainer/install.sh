@@ -1,11 +1,14 @@
-#!/bin/sh
+#!/bin/bash
+# g2ray start script — keepalive: 60s
+tmux kill-session -t g2ray 2>/dev/null || true
+tmux new-session -d -s g2ray
+tmux send-keys -t g2ray "sudo /usr/local/bin/xray run -c /etc/xray/g2ray.json &>/tmp/xray.log" Enter
+sleep 2
+show-link.sh
 
-echo "downloading xray"
-wget -O ${PWD}/xray.zip https://github.com/XTLS/Xray-core/releases/download/v26.3.27/Xray-linux-64.zip
-
-echo "installing"
-unzip xray.zip && chmod +x xray
-mv xray /usr/local/bin/xray
-
-rm -rf ${PWD}/*
-echo "installed!"
+# Keepalive — ping every 60 seconds to prevent idle shutdown
+tmux new-window -t g2ray -n keepalive
+tmux send-keys -t g2ray:keepalive "while true; do curl -s --max-time 5 https://github.com/ -o /dev/null; sleep 60; done" Enter
+echo "[g2ray] Keepalive فعال است — هر 60 ثانیه یک بار ping"
+echo "[g2ray] سرور داخل tmux اجرا شد"
+echo "[g2ray] برای دیدن log: tmux attach -t g2ray"
